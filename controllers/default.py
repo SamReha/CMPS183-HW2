@@ -14,6 +14,11 @@ def index():
     # Let's get all data.
     q = db.samslist
 
+    ignoreSoldItems = False;
+    if (request.args):
+        ignoreSoldItems = request.args[0]
+
+
     def generate_del_button(row):
         # If the record is ours, we can delete it.
         b = ''
@@ -52,6 +57,9 @@ def index():
         paginate=25,
         csv=False,
         )
+    
+    generate_filterBySold_button()
+    
     return dict(form=form)
 
 @auth.requires_login()
@@ -71,6 +79,16 @@ def view():
     form = SQLFORM(db.samslist, record=p, readonly=True)
     # p.name would contain the name of the poster.
     return dict(form=form)
+
+def generate_filterBySold_button():
+        text = "Hide Sold Items"
+
+        if (request.ignoreSoldItems):
+            text = "Show Sold Items"
+        
+        btn = A(text, _class='btn', _href=URL('default', 'index', vars = not(request.ignoreSoldItems))) # THIS DOES NOT WORK.
+
+        return dict(btn=btn)
 
 @auth.requires_login()
 def edit():
