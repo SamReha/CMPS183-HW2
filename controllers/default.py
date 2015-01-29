@@ -14,10 +14,16 @@ def index():
     # Let's get all data.
     q = db.samslist
 
-    ignoreSoldItems = False;
-    if (request.args):
-        ignoreSoldItems = request.args[0]
+    def generate_filterBySold_button():
+        btn_text = 'Hide Sold Items'
+        newState = 'hide'
 
+        if (request.vars.state == 'hide'):
+            btn_text = 'Show Sold Items'
+            newState = 'show'
+
+        b = A(btn_text, _class='btn', _href=URL('default', 'index', vars = {'state':newState}))
+        return b
 
     def generate_del_button(row):
         # If the record is ours, we can delete it.
@@ -33,16 +39,12 @@ def index():
             b = A('Edit', _class='btn', _href=URL('default', 'edit', args=[row.id]))
         return b
 
-    def shorten_post(row):
-        return row.description[:10] + '...'
-
     # Creates extra buttons.
-
     links = [
         dict(header='', body = generate_edit_button),
         dict(header='', body = generate_del_button),
         ]
-
+    
     form = SQLFORM.grid(q,
         fields=[db.samslist.user_id,
                 db.samslist.name,
@@ -57,10 +59,8 @@ def index():
         paginate=25,
         csv=False,
         )
-    
-    generate_filterBySold_button()
-    
-    return dict(form=form)
+
+    return dict(form=form, filterBySold=generate_filterBySold_button())
 
 @auth.requires_login()
 def add():
@@ -79,16 +79,6 @@ def view():
     form = SQLFORM(db.samslist, record=p, readonly=True)
     # p.name would contain the name of the poster.
     return dict(form=form)
-
-def generate_filterBySold_button():
-        text = "Hide Sold Items"
-
-        if (request.ignoreSoldItems):
-            text = "Show Sold Items"
-        
-        btn = A(text, _class='btn', _href=URL('default', 'index', vars = not(request.ignoreSoldItems))) # THIS DOES NOT WORK.
-
-        return dict(btn=btn)
 
 @auth.requires_login()
 def edit():
